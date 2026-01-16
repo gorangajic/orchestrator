@@ -6,9 +6,13 @@
       "title": "Ensure that when creating a new worktree bare branch is up to date",
       "deps": [],
       "priority": 0,
-      "status": "todo",
+      "status": "in_progress",
       "createdAt": "2026-01-16T22:13:22.465Z",
-      "updatedAt": "2026-01-16T22:13:22.465Z"
+      "updatedAt": "2026-01-16T22:13:34.974Z",
+      "owner": "gole@Gorans-MacBook-Pro-2.local",
+      "branch": "task/1-ensure-that-when-creating-a-new-worktree-bare-br",
+      "worktree": "task-1",
+      "startedAt": "2026-01-16T22:13:34.974Z"
     }
   ]
 }
