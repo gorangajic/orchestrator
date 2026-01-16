@@ -20,9 +20,13 @@
       "description": "where task can be removed from the worktree and add delete where task would be deleted and as well removed from worktree.",
       "deps": [],
       "priority": 0,
-      "status": "todo",
+      "status": "in_progress",
       "createdAt": "2026-01-16T22:38:56.829Z",
-      "updatedAt": "2026-01-16T22:38:56.829Z"
+      "updatedAt": "2026-01-16T22:39:05.894Z",
+      "owner": "gole@Gorans-MacBook-Pro-2.local",
+      "branch": "task/2-let-s-add-task-managment",
+      "worktree": "task-2",
+      "startedAt": "2026-01-16T22:39:05.894Z"
     }
   ]
 }
