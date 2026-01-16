@@ -1,4 +1,14 @@
 {
-  "lastId": 0,
-  "tasks": []
+  "lastId": 1,
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Ensure that when creating a new worktree bare branch is up to date",
+      "deps": [],
+      "priority": 0,
+      "status": "todo",
+      "createdAt": "2026-01-16T22:13:22.465Z",
+      "updatedAt": "2026-01-16T22:13:22.465Z"
+    }
+  ]
 }
