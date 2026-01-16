@@ -13,6 +13,7 @@ const SetupSchema = z.object({
 const AgentSchema = z.object({
   command: z.string(),
   args: z.array(z.string()).optional(),
+  prompt: z.string().optional(),
   cwd: z.string().optional(),
   env: z.record(z.string()).optional(),
   shell: z.boolean().optional(),

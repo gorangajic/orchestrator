@@ -145,7 +145,11 @@ export default class Next extends Command {
     }
 
     if (flags.run && flags.agent) {
-      await runAgent(flags.agent, worktreePath, taskPath, config);
+      const defaultPrompt =
+        flags.agent === 'codex'
+          ? 'Look into {taskFile}, please complete it and mark the status as done when completed.'
+          : undefined;
+      await runAgent(flags.agent, worktreePath, taskPath, config, task, defaultPrompt);
     }
 
     this.log(`Claimed task ${task.id} in ${task.worktree}`);

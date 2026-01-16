@@ -31,8 +31,16 @@ orchestrate next --agent codex --run
     "command": "npm install",
     "shell": true,
     "cwd": "."
+  },
+  "agents": {
+    "codex": {
+      "command": "codex",
+      "prompt": "Look into {taskFile}, please complete it and mark the status as done when completed."
+    }
   }
 }
 ```
 
 Setup commands are disabled by default unless configured. Use `orchestrate init --trust` to write a default setup command.
+
+Agent placeholders available in `prompt`, `args`, `env`, and `cwd`: `{taskPath}`, `{taskFile}`, `{taskId}`, `{taskTitle}`, `{taskBranch}`, `{worktreePath}`.

@@ -17,7 +17,8 @@ export function renderTaskMarkdown(task: Task, plan: string, tasksFile: TasksFil
     ? deps.map((depId) => {
         const dep = tasksFile.tasks.find((item) => item.id === depId);
         const status = dep?.status ?? 'unknown';
-        return `- ${depId} (${status})`;
+        const title = dep?.title ? `: ${dep.title}` : '';
+        return `- ${depId}${title} (${status})`;
       })
     : ['- none'];
 
@@ -25,16 +26,7 @@ export function renderTaskMarkdown(task: Task, plan: string, tasksFile: TasksFil
 
   return `# Task ${task.id}: ${task.title}
 
-## Status
-- ${task.status}
-
-## Branch
-- ${task.branch ?? 'unknown'}
-
-## Worktree
-- ${task.worktree ?? 'unknown'}
-
-## Description
+## Objective
 ${description}
 
 ## Dependencies
@@ -46,6 +38,7 @@ ${depLines.join('\n')}
 ## Instructions
 - Read the plan below before starting.
 - Keep work scoped to this task.
+- When finished, mark this task as done in orchestrate/state.
 
 ---
 
