@@ -1,5 +1,5 @@
 {
-  "lastId": 1,
+  "lastId": 2,
   "tasks": [
     {
       "id": 1,
@@ -7,12 +7,22 @@
       "deps": [],
       "priority": 0,
       "status": "in_progress",
-      "createdAt": "2026-01-16T22:13:22.465Z",
-      "updatedAt": "2026-01-16T22:13:34.974Z",
       "owner": "gole@Gorans-MacBook-Pro-2.local",
       "branch": "task/1-ensure-that-when-creating-a-new-worktree-bare-br",
       "worktree": "task-1",
+      "createdAt": "2026-01-16T22:13:22.465Z",
+      "updatedAt": "2026-01-16T22:13:34.974Z",
       "startedAt": "2026-01-16T22:13:34.974Z"
+    },
+    {
+      "id": 2,
+      "title": "Let's add task managment",
+      "description": "where task can be removed from the worktree and add delete where task would be deleted and as well removed from worktree.",
+      "deps": [],
+      "priority": 0,
+      "status": "todo",
+      "createdAt": "2026-01-16T22:38:56.829Z",
+      "updatedAt": "2026-01-16T22:38:56.829Z"
     }
   ]
 }
