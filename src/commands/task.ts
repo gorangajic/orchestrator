@@ -1,23 +1,20 @@
-import { Args, Command } from '@oclif/core';
+import { Command } from '@oclif/core';
 
 export default class Task extends Command {
   static description = 'Task operations (add)';
-
-  static args = {
-    action: Args.string({ required: false, description: 'Subcommand to run' }),
-  };
+  static strict = false;
 
   async run(): Promise<void> {
-    const { args } = await this.parse(Task);
-    if (!args.action) {
+    const [action, ...rest] = this.argv;
+    if (!action) {
       this.log('Specify a subcommand. Example: orchestrate task add "Title"');
       return;
     }
 
-    if (args.action !== 'add') {
-      throw new Error(`Unknown subcommand: ${args.action}`);
+    if (action !== 'add') {
+      throw new Error(`Unknown subcommand: ${action}`);
     }
 
-    await this.config.runCommand('task:add', this.argv.slice(1));
+    await this.config.runCommand('task:add', rest);
   }
 }
