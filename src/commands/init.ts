@@ -50,26 +50,36 @@ async function initStateBranch(
   stateBranch: string,
   defaultBranch: string,
 ): Promise<void> {
-  const remoteRef = `refs/remotes/origin/${stateBranch}`;
   const localRef = `refs/heads/${stateBranch}`;
+  const remoteRef = `refs/remotes/origin/${stateBranch}`;
+
+  const localExists = await refExists(paths.bareDir, localRef);
+  if (localExists) {
+    return;
+  }
 
   const remoteExists = await refExists(paths.bareDir, remoteRef);
-  const localExists = await refExists(paths.bareDir, localRef);
-
   if (remoteExists) {
-    if (!localExists) {
-      await git(['branch', stateBranch, `origin/${stateBranch}`], { gitDir: paths.bareDir });
-    }
+    await git(['branch', stateBranch, `origin/${stateBranch}`], { gitDir: paths.bareDir });
     return;
   }
 
   const tempBase = path.join(paths.tmpDir, 'init-state-');
   const tempDir = await fs.mkdtemp(tempBase);
+  let worktreeAdded = false;
   try {
-    const startPoint = defaultBranch.startsWith('origin/')
-      ? defaultBranch
-      : `origin/${defaultBranch}`;
+    const normalizedDefault = defaultBranch.startsWith('origin/')
+      ? defaultBranch.slice('origin/'.length)
+      : defaultBranch;
+    const hasLocalDefault = await refExists(paths.bareDir, `refs/heads/${normalizedDefault}`);
+    const hasRemoteDefault = await refExists(paths.bareDir, `refs/remotes/origin/${normalizedDefault}`);
+    const startPoint = hasLocalDefault
+      ? normalizedDefault
+      : hasRemoteDefault
+        ? `origin/${normalizedDefault}`
+        : normalizedDefault;
     await git(['worktree', 'add', tempDir, startPoint], { gitDir: paths.bareDir });
+    worktreeAdded = true;
     await git(['-C', tempDir, 'checkout', '--orphan', stateBranch]);
     await git(['-C', tempDir, 'clean', '-fdx']);
     const tasksPath = path.join(tempDir, 'tasks.json');
@@ -81,19 +91,75 @@ async function initStateBranch(
     await git(['-C', tempDir, 'commit', '-m', 'Initialize orchestrate state']);
     await git(['-C', tempDir, 'push', 'origin', stateBranch]);
   } finally {
-    await git(['worktree', 'remove', '--force', tempDir], { gitDir: paths.bareDir });
+    if (worktreeAdded) {
+      try {
+        await git(['worktree', 'remove', '--force', tempDir], { gitDir: paths.bareDir });
+      } catch {
+        // Ignore cleanup failures; surface the original error instead.
+      }
+    }
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 }
 
 async function detectDefaultBranch(bareDir: string): Promise<string> {
+  if (await refExists(bareDir, 'refs/heads/main')) {
+    return 'main';
+  }
+  if (await refExists(bareDir, 'refs/heads/master')) {
+    return 'master';
+  }
+
   try {
     const output = await gitStdout(['symbolic-ref', 'refs/remotes/origin/HEAD'], { gitDir: bareDir });
     const parts = output.split('/');
-    return parts[parts.length - 1] || 'main';
+    const branch = parts[parts.length - 1];
+    if (branch) {
+      return branch;
+    }
   } catch {
+    // Fall back to probing common branch names below.
+  }
+
+  if (await refExists(bareDir, 'refs/remotes/origin/main')) {
     return 'main';
   }
+  if (await refExists(bareDir, 'refs/remotes/origin/master')) {
+    return 'master';
+  }
+
+  try {
+    const output = await gitStdout(['for-each-ref', '--format=%(refname:strip=2)', 'refs/heads'], {
+      gitDir: bareDir,
+    });
+    const branches = output
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    if (branches.length > 0) {
+      return branches[0];
+    }
+  } catch {
+    // Ignore and fall back to remote branches.
+  }
+
+  try {
+    const output = await gitStdout(
+      ['for-each-ref', '--format=%(refname:strip=3)', 'refs/remotes/origin'],
+      { gitDir: bareDir },
+    );
+    const branches = output
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && line !== 'HEAD');
+    if (branches.length > 0) {
+      return branches[0];
+    }
+  } catch {
+    // Ignore and fall back to main.
+  }
+
+  return 'main';
 }
 
 export default class Init extends Command {

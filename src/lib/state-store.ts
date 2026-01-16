@@ -43,6 +43,11 @@ async function ensureLocalBranch(paths: ProjectPaths, stateBranch: string): Prom
   await git(['branch', stateBranch, `origin/${stateBranch}`], { gitDir: paths.bareDir });
 }
 
+async function fetchStateBranch(paths: ProjectPaths, stateBranch: string): Promise<void> {
+  const refspec = `+refs/heads/${stateBranch}:refs/heads/${stateBranch}`;
+  await git(['fetch', 'origin', refspec], { gitDir: paths.bareDir });
+}
+
 async function createTempWorktree(paths: ProjectPaths, stateBranch: string): Promise<{ dir: string; cleanup: () => Promise<void> }> {
   const tempBase = path.join(paths.tmpDir, 'state-');
   await fs.mkdir(paths.tmpDir, { recursive: true });
@@ -97,12 +102,12 @@ export async function updateState(
   mutate: (state: State) => Promise<State> | State,
 ): Promise<UpdateResult> {
   return withLock(paths.lockPath, async () => {
-    await ensureLocalBranch(paths, stateBranch);
+      await ensureLocalBranch(paths, stateBranch);
     for (let attempt = 0; attempt < MAX_UPDATE_ATTEMPTS; attempt += 1) {
-      await git(['fetch', 'origin', stateBranch], { gitDir: paths.bareDir });
+      await fetchStateBranch(paths, stateBranch);
       const { dir, cleanup } = await createTempWorktree(paths, stateBranch);
       try {
-        await git(['-C', dir, 'reset', '--hard', `origin/${stateBranch}`]);
+        await git(['-C', dir, 'reset', '--hard', stateBranch]);
         const state = await readStateFromWorktree(dir);
         const next = await mutate(state);
         await writeStateToWorktree(dir, next);

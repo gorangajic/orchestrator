@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "commonjs",
   "bin": {
-    "orchestrate": "./bin/run.js"
+    "orch": "./bin/run.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

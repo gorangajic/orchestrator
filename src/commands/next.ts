@@ -121,9 +121,16 @@ export default class Next extends Command {
       throw new Error(`Branch already exists: ${task.branch}`);
     }
 
-    const startPoint = config.defaultBranch.startsWith('origin/')
-      ? config.defaultBranch
-      : `origin/${config.defaultBranch}`;
+    const normalizedDefault = config.defaultBranch.startsWith('origin/')
+      ? config.defaultBranch.slice('origin/'.length)
+      : config.defaultBranch;
+    const hasLocalDefault = await refExists(paths.bareDir, `refs/heads/${normalizedDefault}`);
+    const hasRemoteDefault = await refExists(paths.bareDir, `refs/remotes/origin/${normalizedDefault}`);
+    const startPoint = hasLocalDefault
+      ? normalizedDefault
+      : hasRemoteDefault
+        ? `origin/${normalizedDefault}`
+        : normalizedDefault;
     await git(
       ['worktree', 'add', '-b', task.branch, worktreePath, startPoint],
       { gitDir: paths.bareDir },
