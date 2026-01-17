@@ -33,9 +33,13 @@
       "title": "let's move list command to the task",
       "deps": [],
       "priority": 0,
-      "status": "todo",
+      "status": "in_progress",
       "createdAt": "2026-01-17T11:58:00.839Z",
-      "updatedAt": "2026-01-17T11:58:00.839Z"
+      "updatedAt": "2026-01-17T11:58:10.710Z",
+      "owner": "gole@Gorans-MacBook-Pro-2.local",
+      "branch": "task/3-let-s-move-list-command-to-the-task",
+      "worktree": "task-3",
+      "startedAt": "2026-01-17T11:58:10.710Z"
     }
   ]
 }
