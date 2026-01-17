@@ -32,6 +32,30 @@ async function refExists(gitDir: string, ref: string): Promise<boolean> {
   }
 }
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchOriginWithRetry(gitDir: string, attempts = 3, delayMs = 500): Promise<void> {
+  let lastError: any = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await git(['fetch', '--prune', 'origin'], { gitDir });
+      return;
+    } catch (error: any) {
+      lastError = error;
+      if (attempt < attempts) {
+        await sleep(delayMs * attempt);
+      }
+    }
+  }
+  const details = typeof lastError?.stderr === 'string' && lastError.stderr.trim()
+    ? lastError.stderr.trim().split('\n').slice(-1)[0]
+    : lastError?.message;
+  const suffix = details ? ` (${details})` : '';
+  throw new Error(`Failed to fetch origin after ${attempts} attempts${suffix}`);
+}
+
 export default class Next extends Command {
   static description = 'Claim the next eligible task and prepare a worktree';
 
@@ -121,15 +145,16 @@ export default class Next extends Command {
       throw new Error(`Branch already exists: ${task.branch}`);
     }
 
+    await fetchOriginWithRetry(paths.bareDir);
     const normalizedDefault = config.defaultBranch.startsWith('origin/')
       ? config.defaultBranch.slice('origin/'.length)
       : config.defaultBranch;
-    const hasLocalDefault = await refExists(paths.bareDir, `refs/heads/${normalizedDefault}`);
     const hasRemoteDefault = await refExists(paths.bareDir, `refs/remotes/origin/${normalizedDefault}`);
-    const startPoint = hasLocalDefault
-      ? normalizedDefault
-      : hasRemoteDefault
-        ? `origin/${normalizedDefault}`
+    const hasLocalDefault = await refExists(paths.bareDir, `refs/heads/${normalizedDefault}`);
+    const startPoint = hasRemoteDefault
+      ? `origin/${normalizedDefault}`
+      : hasLocalDefault
+        ? normalizedDefault
         : normalizedDefault;
     await git(
       ['worktree', 'add', '-b', task.branch, worktreePath, startPoint],
