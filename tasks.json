@@ -1,5 +1,5 @@
 {
-  "lastId": 2,
+  "lastId": 3,
   "tasks": [
     {
       "id": 1,
@@ -21,12 +21,21 @@
       "deps": [],
       "priority": 0,
       "status": "in_progress",
-      "createdAt": "2026-01-16T22:38:56.829Z",
-      "updatedAt": "2026-01-16T22:39:05.894Z",
       "owner": "gole@Gorans-MacBook-Pro-2.local",
       "branch": "task/2-let-s-add-task-managment",
       "worktree": "task-2",
+      "createdAt": "2026-01-16T22:38:56.829Z",
+      "updatedAt": "2026-01-16T22:39:05.894Z",
       "startedAt": "2026-01-16T22:39:05.894Z"
+    },
+    {
+      "id": 3,
+      "title": "let's move list command to the task",
+      "deps": [],
+      "priority": 0,
+      "status": "todo",
+      "createdAt": "2026-01-17T11:58:00.839Z",
+      "updatedAt": "2026-01-17T11:58:00.839Z"
     }
   ]
 }
