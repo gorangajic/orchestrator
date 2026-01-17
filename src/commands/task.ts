@@ -1,7 +1,7 @@
 import { Command } from '@oclif/core';
 
 export default class Task extends Command {
-  static description = 'Task operations (add)';
+  static description = 'Task operations (add, remove, delete)';
   static strict = false;
 
   async run(): Promise<void> {
@@ -11,10 +11,11 @@ export default class Task extends Command {
       return;
     }
 
-    if (action !== 'add') {
+    const allowed = new Set(['add', 'remove', 'delete']);
+    if (!allowed.has(action)) {
       throw new Error(`Unknown subcommand: ${action}`);
     }
 
-    await this.config.runCommand('task:add', rest);
+    await this.config.runCommand(`task:${action}`, rest);
   }
 }
