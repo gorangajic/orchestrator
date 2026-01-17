@@ -10,12 +10,15 @@ cd project
 orchestrate task add "First task" --desc "Describe the task"
 orchestrate list
 orchestrate next --agent codex --run
+orchestrate agent list
+orchestrate web --port 3000
 ```
 
 ## Workspace layout
 
 - `.bare/`: bare clone of the repo
 - `.orchestrate/`: configuration, locks, logs, temp worktrees
+- `.orchestrate/agent-runs.json`: local background agent run metadata
 - `task-<id>/`: per-task worktrees created by `orchestrate next`
 
 ## Config
@@ -44,3 +47,11 @@ orchestrate next --agent codex --run
 Setup commands are disabled by default unless configured. Use `orchestrate init --trust` to write a default setup command.
 
 Agent placeholders available in `prompt`, `args`, `env`, and `cwd`: `{taskPath}`, `{taskFile}`, `{taskId}`, `{taskTitle}`, `{taskBranch}`, `{worktreePath}`.
+
+## Monitoring
+
+- `orchestrate next --agent codex --run` starts the agent in the background and logs output to `.orchestrate/logs/task-<id>.agent.log`.
+- `orchestrate next --agent codex --run --foreground` keeps the agent attached to the current terminal.
+- `orchestrate agent list` shows local agent runs and their status.
+- `orchestrate agent logs <taskId>` tails recent output for the latest run of a task.
+- `orchestrate web --port 3000` starts the local web UI (binds to 127.0.0.1 by default).

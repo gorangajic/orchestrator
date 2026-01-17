@@ -9,7 +9,8 @@ import { isTaskReady, selectNextTask, taskSlug, Task } from '../lib/tasks';
 import { git } from '../lib/git';
 import { renderTaskMarkdown } from '../lib/templates';
 import { runSetup } from '../lib/setup';
-import { runAgent } from '../lib/agent';
+import { runAgent, startAgentInBackground } from '../lib/agent';
+import { createRunId, registerAgentRun } from '../lib/agent-runs';
 
 async function pathExists(target: string): Promise<boolean> {
   try {
@@ -61,7 +62,8 @@ export default class Next extends Command {
 
   static flags = {
     agent: Flags.string({ description: 'Agent runner to launch (codex|claude|opencode)' }),
-    run: Flags.boolean({ description: 'Run the selected agent after setup' }),
+    run: Flags.boolean({ description: 'Run the selected agent after setup (background by default)' }),
+    foreground: Flags.boolean({ description: 'Run the selected agent in the foreground' }),
   };
 
   async run(): Promise<void> {
@@ -76,6 +78,9 @@ export default class Next extends Command {
 
     if (flags.run && !flags.agent) {
       throw new Error('Use --agent with --run to launch an agent.');
+    }
+    if (flags.foreground && !flags.run) {
+      throw new Error('Use --run with --foreground to launch an agent.');
     }
 
     let claimedId: number | null = null;
@@ -174,7 +179,37 @@ export default class Next extends Command {
         flags.agent === 'codex'
           ? 'Look into {taskFile}, please complete it and mark the status as done when completed.'
           : undefined;
-      await runAgent(flags.agent, worktreePath, taskPath, config, task, defaultPrompt);
+
+      if (flags.foreground) {
+        await runAgent(flags.agent, worktreePath, taskPath, config, task, defaultPrompt);
+      } else {
+        const runId = createRunId(task.id);
+        const logPath = path.join(paths.logsDir, `task-${task.id}.agent.log`);
+        const run = await startAgentInBackground(
+          flags.agent,
+          worktreePath,
+          taskPath,
+          config,
+          runId,
+          logPath,
+          task,
+          defaultPrompt,
+        );
+        await registerAgentRun(paths, {
+          id: runId,
+          taskId: task.id,
+          agent: flags.agent,
+          pid: run.pid,
+          startedAt: run.startedAt,
+          worktreePath,
+          taskPath,
+          logPath,
+          command: run.command,
+          args: run.args,
+          cwd: run.cwd,
+        });
+        this.log(`Started ${flags.agent} in background (pid ${run.pid}). Logs: ${logPath}`);
+      }
     }
 
     this.log(`Claimed task ${task.id} in ${task.worktree}`);
